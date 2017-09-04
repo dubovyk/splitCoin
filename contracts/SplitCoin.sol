@@ -26,7 +26,7 @@ contract SplitCoin {
 		balances[addr_one] += half_amount;
 		balances[addr_two] += half_amount;
 		Transfer(msg.sender, addr_one, half_amount);
-		Transfer(msg.sender, addr_one, half_amount);
+		Transfer(msg.sender, addr_two, half_amount);
 		return true;
 	}
 	
