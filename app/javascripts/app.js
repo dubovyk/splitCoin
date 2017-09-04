@@ -76,7 +76,7 @@ window.App = {
     SplitCoin.deployed().then(function(instance) {
       split = instance;
       console.log("will send " + amount);
-      return split.splitCoin({from: account, value: web3.toWei(amount), gas: 500000});
+      return split.splitCoin({from: account, value: web3.toWei(amount), gas: 500000, gasPrice: web3.eth.gasPrice.toString(10)});
     }).then(function(tx) {
       console.log(tx);
       self.setStatus("Transaction complete!");
@@ -99,24 +99,51 @@ window.addEventListener('load', function() {
     window.web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
   }
 
-  if (window.location.href.indexOf("client_sig") > -1) {
+if (window.location.href.indexOf("client_sig") > -1) {
         console.log("In client_sig mode");
-        const hookedProvider = new HookedWeb3Provider({
-            // Let's pick the one that came with Truffle
-            host: web3.currentProvider.host,
-            transaction_signer: { 
-                hasAddress: function(address, callback) {
-                    console.log(address);
-                    callback(undefined, true);
-                },
-                signTransaction: function(tx_params, callback) {
-                    console.log(tx_params);
-                    callback(undefined, "0x00");
-                }
-            }
-        });
-        web3.setProvider(hookedProvider);
-    }
+        const password = prompt('Enter password for keystore encryption', 'password');
+        console.log(
+            "If you want a different 12-word seed phrase, here is one:",
+            EthLightWallet.keystore.generateRandomSeed());
+        // For the demo's simplicity sake, we will use:
+        const seedPhrase = prompt('Enter seed phrase for key generation', "shadow forest way arrange ladder then lake ethics amazing seminar educate token");
 
-  App.start();
+        Promise.promisifyAll(EthLightWallet.keystore, { suffix: "Promise" });
+        let keystore;
+        EthLightWallet.keystore.createVaultPromise({
+                password: password,
+                seedPhrase: seedPhrase
+            })
+            .then(_keystore => {
+                keystore = _keystore;
+                // Some methods will require providing the `pwDerivedKey`,
+                // Allowing you to only decrypt private keys on an as-needed basis.
+                // You can generate that value with this convenient method:
+                Promise.promisifyAll(keystore, { suffix: "Promise" });
+                return keystore.keyFromPasswordPromise(password);
+            })
+            .then(pwDerivedKey => {
+                // generate 1 new address/private key pair
+                // the corresponding private key is also encrypted
+                keystore.generateNewAddress(pwDerivedKey, 1);
+                // Let you know it
+                console.log("Your address is", "0x" + keystore.getAddresses()[0], ", make sure you have enough Ether on it");
+                // Let's fool the getAccounts function
+                web3.eth.getAccounts = callback => callback(undefined, keystore.getAddresses().map(address => "0x" + address));
+                // Let's ask for the password whenever needed to avoid theft
+                keystore.passwordProvider = callback => callback(null, prompt("Please enter password to sign this transaction", "password"));
+                // Now set keystore as transaction_signer in the hooked web3 provider
+                const hookedProvider = new HookedWeb3Provider({
+                    // Let's pick the one that came with Truffle
+                    host: web3.currentProvider.host,
+                    transaction_signer: keystore
+                });
+                web3.setProvider(hookedProvider);
+                console.log('with hook');
+                App.start();
+            })
+            .catch(console.error);
+    } else {
+        App.start();
+    }
 });
