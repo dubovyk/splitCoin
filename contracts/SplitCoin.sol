@@ -6,36 +6,34 @@ pragma solidity ^0.4.2;
 // token, see: https://github.com/ConsenSys/Tokens. Cheers!
 
 contract SplitCoin {
-	mapping (address => uint) balances;
 
 	event Transfer(address indexed _from, address indexed _to, uint256 _value);
 
-	/*address addr_one;
+	address addr_one;
 	address addr_two;
 
-	function MetaCoin() {
-		balances[tx.origin] = 10000;
-	}*/
+	function SplitCoin(address a1, address a2) {
+		addr_one = a1;
+		addr_two = a2;
+	}
 
-	function splitCoin(address addr_one, address addr_two, uint amount) returns(bool sufficient) {
-		if (balances[msg.sender] < amount) return false;
-		balances[msg.sender] -= amount;
-		uint half_amount;
-		half_amount = amount/2;
-		
-		balances[addr_one] += half_amount;
-		balances[addr_two] += half_amount;
+	function () payable {}
+
+	function splitCoin() payable returns(bool sufficient) {
+		uint half_amount = msg.value/2;
+
+		if (! addr_one.send(half_amount))
+			throw;
+
+		if (! addr_two.send(half_amount))
+			throw;
+
 		Transfer(msg.sender, addr_one, half_amount);
 		Transfer(msg.sender, addr_two, half_amount);
 		return true;
 	}
-	
-	function addCoin(address lucky_guy, uint amount) returns (bool sufficient){
-	    balances[lucky_guy] += amount;
-	    return true;
-	}
 
-	function getBalance(address addr) returns(uint) {
-		return balances[addr];
+	function getAddresses() returns(address, address) {
+		return (addr_one, addr_two);
 	}
 }
