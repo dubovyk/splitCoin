@@ -9,13 +9,22 @@
   <h1>Splitter</h1>
   <h2>The BEST ever Truffle Dapp</h2>
   <br>
-  <!--<h1>Send MetaCoin</h1>
-  <br><label for="receiver">To Address:</label><input type="text" id="receiver" placeholder="e.g., 0x93e66d9baea28c17d9fc393b53e3fbdd76899dae"></input>
-  <br><label for="receiver">To Address:</label><input type="text" id="receiverExtra" placeholder="e.g., 0x93e66d9baea28c17d9fc393b53e3fbdd76899dae"></input>
-  <br><br><button id="send" onclick="App.sendCoin()">Send MetaCoin</button>-->
+  <br><label for="splitterAddr">Splitter address:</label><input type="text" id="splitterAddr" placeholder="0xSOMETHING"></input>
   <br><label for="amount">Amount:</label><input type="text" id="amount" placeholder="e.g., 95"></input>
-  <br><br><button id="send" onclick="App.splitCoin()">Send MetaCoins to 2 accounts</button>
+  <br><br><button id="send" onclick="App.splitWithSplitter()">Send MetaCoins to 2 accounts</button>
   <br><br>
+
+  <br><label for="Get balance">Address:</label><input type="text" id="addr" placeholder="0xSOMETHING"></input>
+  <br><br><button id="send" onclick="App.getBalance()">Get balance</button>  <label id="Balance"></label>
+  <br><br>
+
+  <br><label for="Address 1">Address 1:</label><input type="text" id="addr_1" placeholder="0xSOMETHING"></input>
+  <br><label for="Address 2">Address 2:</label><input type="text" id="addr_2" placeholder="0xSOMETHING"></input>
+  <br><br><button id="send" onclick="App.generateSplitter()">Get coin splitter address</button>  <label id="splitterId"></label>
+  <br><br>
+
+  <br><br><label for="Splitters">Splitters:</label><label id="splitterAddresses"></label>
+  <br><br><button onclick="App.getSplitters()"></button>
   <span id="status"></span>
   <br>
   <span class="hint"><strong>Hint:</strong> open the browser developer console to view any errors and warnings.</span>

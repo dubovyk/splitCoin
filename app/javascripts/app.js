@@ -9,23 +9,25 @@ import { default as EthLightWallet } from "eth-lightwallet";
 import { default as Promise} from 'bluebird';
 
 // Import our contract artifacts and turn them into usable abstractions.
-import splitcoin_artifacts from '../../build/contracts/SplitCoin.json'
+import splitcoincreator_artifacts from '../../build/contracts/SplitterCreator.json'
 
 // MetaCoin is our usable abstraction, which we'll use through the code below.
-var SplitCoin = contract(splitcoin_artifacts);
+var SplitCoinCreator = contract(splitcoincreator_artifacts);
 
 // The following code is simple to show off interacting with your contracts.
 // As your needs grow you will likely need to change its form and structure.
 // For application bootstrapping, check out window.addEventListener below.
 var accounts;
 var account;
+var currentSplitter;
+var splitters = [];
 
 window.App = {
   start: function() {
     var self = this;
 
     // Bootstrap the MetaCoin abstraction for Use.
-    SplitCoin.setProvider(web3.currentProvider);
+    SplitCoinCreator.setProvider(web3.currentProvider);
 
     // Get the initial account balance so it can be displayed.
     web3.eth.getAccounts(function(err, accs) {
@@ -41,7 +43,6 @@ window.App = {
 
       accounts = accs;
       account = accounts[0];
-      self.getAcc();
     });
   },
 
@@ -50,42 +51,68 @@ window.App = {
     status.innerHTML = message;
   },
 
-  getAcc: function() {
-    var split;
-    SplitCoin.deployed().then(function (instance) {
-      split = instance;
-      return split.getAddresses.call({from: account});
-    }).then(function(value) {
-      console.log(value);
-      console.log(value.valueOf());
-    }).catch (function(e){
-      console.log(e);
-    })
+
+  getBalance: function(){
+      var split;
+      var address = document.getElementById("addr").value;
+      SplitCoinCreator.deployed().then(function (instance) {
+        split = instance;
+        return split.getBalance.call(address);
+      }).then(function (val) {
+        document.getElementById("Balance").innerHTML = val.c[0];
+        console.log(val);
+      })
   },
 
+  getSplitters: function(){
+      var splitcreator;
+      SplitCoinCreator.deployed().then( function (instance) {
+        splitcreator = instance;
+        return splitcreator.getAddresses.call();
+      }).then(function (value) {
+        console.log("azazaz\n" + value);
+      }).catch(function (e){
+        console.log(e);
+      })
+  },
 
-  splitCoin: function() {
-    var self = this;
+  generateSplitter: function(){
+      var addr_one = document.getElementById("addr_1").value;
+      var addr_two = document.getElementById("addr_2").value;
+      
+      console.log(addr_one);
+      console.log(addr_two);
 
-    var amount = parseInt(document.getElementById("amount").value);
-    
+      var splitcreator;
+      
+      SplitCoinCreator.deployed().then( function (instance) {
+        splitcreator = instance;
+        return splitcreator.createSplitter(addr_one, addr_two, {from: account, gas: 500000, gasPrice: web3.eth.gasPrice.toString(10)});
+      }).then(function (value) {
+        console.log(value);
+      }).catch(function (e){
+        console.log(e);
+      })
 
-    this.setStatus("Initiating transaction... (please wait)");
+  },
 
-    var split;
-    SplitCoin.deployed().then(function(instance) {
-      split = instance;
-      console.log("will send " + amount);
-      return split.splitCoin({from: account, value: web3.toWei(amount), gas: 500000, gasPrice: web3.eth.gasPrice.toString(10)});
-    }).then(function(tx) {
-      console.log(tx);
-      self.setStatus("Transaction complete!");
-    }).catch(function(e) {
-      console.log(e);
-      self.setStatus("Error sending coin; see log.");
-    });
+  splitWithSplitter: function() {
+      var splitcreator;
+
+      var splitterAddr = document.getElementById("splitterAddr").value;
+      var amount = parseFloat(document.getElementById("amount").value);
+      
+      SplitCoinCreator.deployed().then( function (instance) {
+        splitcreator = instance;
+        return splitcreator.split(splitterAddr, {from: account, value: web3.toWei(amount), gas: 500000, gasPrice: web3.eth.gasPrice.toString(10)});
+      }).then(function (value) {
+        console.log(value);
+      }).catch(function (e){
+        console.log(e);
+      })
   }
-};
+} 
+
 
 window.addEventListener('load', function() {
     // Checking if Web3 has been injected by the browser (Mist/MetaMask)

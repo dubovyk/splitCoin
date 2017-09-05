@@ -7,7 +7,7 @@ pragma solidity ^0.4.2;
 
 contract SplitCoin {
 
-	event Transfer(address indexed _from, address indexed _to, uint256 _value);
+	// event Transfer(address indexed _from, address indexed _to, uint256 _value);
 
 	address addr_one;
 	address addr_two;
@@ -20,16 +20,16 @@ contract SplitCoin {
 	function () payable {}
 
 	function splitCoin() payable returns(bool sufficient) {
-		uint half_amount = msg.value/2;
+		// uint half_amount = msg.value/2;
 
-		if (! addr_one.send(half_amount))
-			throw;
+		// if (! addr_one.send(half_amount))
+		// 	throw;
 
-		if (! addr_two.send(half_amount))
-			throw;
+		// if (! addr_two.send(half_amount))
+		// 	throw;
 
-		Transfer(msg.sender, addr_one, half_amount);
-		Transfer(msg.sender, addr_two, half_amount);
+		// Transfer(msg.sender, addr_one, half_amount);
+		// Transfer(msg.sender, addr_two, half_amount);
 		return true;
 	}
 
